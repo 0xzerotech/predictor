@@ -4,6 +4,7 @@ export type MarketPhase = "Discovery" | "Bonded";
 
 export interface UiMarket {
   publicKey: PublicKey;
+  address: string;
   marketMint: PublicKey;
   quoteVault: PublicKey;
   attentionVault: PublicKey;

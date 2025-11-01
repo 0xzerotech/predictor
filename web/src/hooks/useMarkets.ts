@@ -47,6 +47,7 @@ const fetchMarkets = async (program: ReturnType<typeof useProgramClient>) => {
 
     return {
       publicKey,
+      address: publicKey.toBase58(),
       marketMint: account.marketMint as PublicKey,
       quoteVault: account.quoteVault as PublicKey,
       attentionVault: account.attentionVault as PublicKey,
@@ -93,20 +94,43 @@ export const useMarkets = () => {
         discovery: 0,
         bonded: 0,
         attentionFlow: 0,
+        totalTrades: 0,
+        topMarket: null as UiMarket | null,
+        attentionLeader: null as UiMarket | null,
       };
     }
     return data.markets.reduce(
       (acc, market) => {
         acc.totalVolume += market.volume;
+        acc.totalTrades += market.trades;
+
         if (market.state === "Discovery") {
           acc.discovery += 1;
         } else {
           acc.bonded += 1;
         }
+
         acc.attentionFlow += market.hypeScore;
+
+        if (!acc.topMarket || market.volume > acc.topMarket.volume) {
+          acc.topMarket = market;
+        }
+
+        if (!acc.attentionLeader || market.hypeScore > acc.attentionLeader.hypeScore) {
+          acc.attentionLeader = market;
+        }
+
         return acc;
       },
-      { totalVolume: 0, discovery: 0, bonded: 0, attentionFlow: 0 }
+      {
+        totalVolume: 0,
+        discovery: 0,
+        bonded: 0,
+        attentionFlow: 0,
+        totalTrades: 0,
+        topMarket: null as UiMarket | null,
+        attentionLeader: null as UiMarket | null,
+      }
     );
   }, [data]);
 
