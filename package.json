@@ -1,0 +1,21 @@
+{
+  "name": "hyper-prediction",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "anchor test",
+    "lint": "echo 'No lint configured'"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "0.30.1",
+    "@solana/spl-token": "0.4.6",
+    "@solana/web3.js": "1.95.1"
+  },
+  "devDependencies": {
+    "@types/chai": "4.3.11",
+    "chai": "4.3.10",
+    "ts-node": "10.9.2",
+    "typescript": "5.5.4"
+  }
+}
+

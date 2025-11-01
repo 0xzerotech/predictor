@@ -1,0 +1,9 @@
+[workspace]
+members = [
+  "programs/hyper_prediction"
+]
+
+[profile.release]
+overflow-checks = true
+lto = true
+

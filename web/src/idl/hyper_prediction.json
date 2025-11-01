@@ -1,0 +1,287 @@
+{
+  "version": "0.1.0",
+  "name": "hyper_prediction",
+  "instructions": [
+    {
+      "name": "initializeGlobal",
+      "accounts": [
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "globalState", "isMut": true, "isSigner": false },
+        { "name": "attentionMint", "isMut": true, "isSigner": true },
+        { "name": "globalAttentionVault", "isMut": true, "isSigner": false },
+        { "name": "quoteMint", "isMut": false, "isSigner": false },
+        { "name": "treasury", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false },
+        { "name": "rent", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "attentionFeeBps", "type": "u16" },
+        { "name": "creatorFeeBps", "type": "u16" },
+        { "name": "treasuryFeeBps", "type": "u16" },
+        { "name": "bondVolumeTarget", "type": "u64" },
+        { "name": "bondLiquidityTarget", "type": "u64" }
+      ]
+    },
+    {
+      "name": "createMarket",
+      "accounts": [
+        { "name": "globalState", "isMut": false, "isSigner": false },
+        { "name": "marketCreator", "isMut": true, "isSigner": true },
+        { "name": "market", "isMut": true, "isSigner": false },
+        { "name": "marketMint", "isMut": true, "isSigner": true },
+        { "name": "marketQuoteVault", "isMut": true, "isSigner": false },
+        { "name": "marketAttentionVault", "isMut": true, "isSigner": false },
+        { "name": "curve", "isMut": true, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false },
+        { "name": "rent", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "args", "type": { "defined": "MarketCreationArgs" } }
+      ]
+    },
+    {
+      "name": "tradeCurve",
+      "accounts": [
+        { "name": "globalState", "isMut": false, "isSigner": false },
+        { "name": "market", "isMut": true, "isSigner": false },
+        { "name": "curve", "isMut": true, "isSigner": false },
+        { "name": "marketMint", "isMut": true, "isSigner": false },
+        { "name": "marketQuoteVault", "isMut": true, "isSigner": false },
+        { "name": "marketAttentionVault", "isMut": true, "isSigner": false },
+        { "name": "userQuote", "isMut": true, "isSigner": false },
+        { "name": "userShares", "isMut": true, "isSigner": false },
+        { "name": "creatorFeeDestination", "isMut": true, "isSigner": false },
+        { "name": "treasuryFeeDestination", "isMut": true, "isSigner": false },
+        { "name": "marketCreator", "isMut": false, "isSigner": false },
+        { "name": "user", "isMut": true, "isSigner": true },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "tradeArgs", "type": { "defined": "TradeArgs" } }
+      ]
+    },
+    {
+      "name": "bondMarket",
+      "accounts": [
+        { "name": "globalState", "isMut": false, "isSigner": false },
+        { "name": "market", "isMut": true, "isSigner": false },
+        { "name": "marketQuoteVault", "isMut": true, "isSigner": false },
+        { "name": "resolution", "isMut": true, "isSigner": false },
+        { "name": "resolver", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "resolveMarket",
+      "accounts": [
+        { "name": "globalState", "isMut": false, "isSigner": false },
+        { "name": "market", "isMut": true, "isSigner": false },
+        { "name": "resolution", "isMut": true, "isSigner": false },
+        { "name": "resolver", "isMut": true, "isSigner": true }
+      ],
+      "args": [
+        { "name": "outcome", "type": { "defined": "Outcome" } },
+        { "name": "settlementPrice", "type": "u64" }
+      ]
+    },
+    {
+      "name": "redeem",
+      "accounts": [
+        { "name": "globalState", "isMut": false, "isSigner": false },
+        { "name": "market", "isMut": true, "isSigner": false },
+        { "name": "resolution", "isMut": true, "isSigner": false },
+        { "name": "marketQuoteVault", "isMut": true, "isSigner": false },
+        { "name": "userQuote", "isMut": true, "isSigner": false },
+        { "name": "userShares", "isMut": true, "isSigner": false },
+        { "name": "user", "isMut": true, "isSigner": true },
+        { "name": "marketMint", "isMut": true, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "quantity", "type": "u64" }
+      ]
+    },
+    {
+      "name": "harvestAttention",
+      "accounts": [
+        { "name": "globalState", "isMut": false, "isSigner": false },
+        { "name": "market", "isMut": true, "isSigner": false },
+        { "name": "marketAttentionVault", "isMut": true, "isSigner": false },
+        { "name": "globalAttentionVault", "isMut": true, "isSigner": false },
+        { "name": "attentionMint", "isMut": true, "isSigner": false },
+        { "name": "attnDestination", "isMut": true, "isSigner": false },
+        { "name": "caller", "isMut": true, "isSigner": true },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "GlobalState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "authority", "type": "publicKey" },
+          { "name": "attentionMint", "type": "publicKey" },
+          { "name": "attentionVault", "type": "publicKey" },
+          { "name": "quoteMint", "type": "publicKey" },
+          { "name": "treasury", "type": "publicKey" },
+          { "name": "attentionFeeBps", "type": "u16" },
+          { "name": "creatorFeeBps", "type": "u16" },
+          { "name": "treasuryFeeBps", "type": "u16" },
+          { "name": "bondVolumeTarget", "type": "u64" },
+          { "name": "bondLiquidityTarget", "type": "u64" },
+          { "name": "createdTs", "type": "i64" },
+          { "name": "bump", "type": "u8" },
+          { "name": "attentionVaultBump", "type": "u8" }
+        ]
+      }
+    },
+    {
+      "name": "Market",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "global", "type": "publicKey" },
+          { "name": "authority", "type": "publicKey" },
+          { "name": "marketMint", "type": "publicKey" },
+          { "name": "quoteVault", "type": "publicKey" },
+          { "name": "attentionVault", "type": "publicKey" },
+          { "name": "state", "type": { "defined": "MarketState" } },
+          { "name": "supply", "type": "u64" },
+          { "name": "volume", "type": "u128" },
+          { "name": "trades", "type": "u64" },
+          { "name": "hypeScore", "type": "u128" },
+          { "name": "basePrice", "type": "u64" },
+          { "name": "slopeBps", "type": "u64" },
+          { "name": "curvatureBps", "type": "u64" },
+          { "name": "maxSupply", "type": "u64" },
+          { "name": "bondVolumeTarget", "type": "u64" },
+          { "name": "bondLiquidityTarget", "type": "u64" },
+          { "name": "metadata", "type": { "vec": "u8" } },
+          { "name": "createdTs", "type": "i64" },
+          { "name": "bondedTs", "type": "i64" },
+          { "name": "bump", "type": "u8" },
+          { "name": "quoteVaultBump", "type": "u8" },
+          { "name": "attentionVaultBump", "type": "u8" }
+        ]
+      }
+    },
+    {
+      "name": "BondingCurve",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "market", "type": "publicKey" },
+          { "name": "basePrice", "type": "u64" },
+          { "name": "slopeBps", "type": "u64" },
+          { "name": "curvatureBps", "type": "u64" },
+          { "name": "supply", "type": "u64" },
+          { "name": "volume", "type": "u128" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    },
+    {
+      "name": "Resolution",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "market", "type": "publicKey" },
+          { "name": "resolver", "type": "publicKey" },
+          { "name": "state", "type": { "defined": "ResolutionState" } },
+          { "name": "outcome", "type": { "defined": "Outcome" } },
+          { "name": "settlementPrice", "type": "u64" },
+          { "name": "createdTs", "type": "i64" },
+          { "name": "resolvedTs", "type": "i64" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "MarketCreationArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "basePrice", "type": "u64" },
+          { "name": "slopeBps", "type": "u64" },
+          { "name": "curvatureBps", "type": "u64" },
+          { "name": "maxSupply", "type": "u64" },
+          { "name": "metadata", "type": { "vec": "u8" } },
+          { "name": "bondVolumeOverride", "type": { "option": "u64" } },
+          { "name": "bondLiquidityOverride", "type": { "option": "u64" } }
+        ]
+      }
+    },
+    {
+      "name": "TradeArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "direction", "type": { "defined": "TradeDirection" } },
+          { "name": "quantity", "type": "u64" },
+          { "name": "maxSpend", "type": "u64" },
+          { "name": "minReceive", "type": "u64" }
+        ]
+      }
+    },
+    {
+      "name": "TradeDirection",
+      "type": {
+        "kind": "enum",
+        "variants": [{ "name": "Buy" }, { "name": "Sell" }]
+      }
+    },
+    {
+      "name": "MarketState",
+      "type": {
+        "kind": "enum",
+        "variants": [{ "name": "Discovery" }, { "name": "Bonded" }]
+      }
+    },
+    {
+      "name": "ResolutionState",
+      "type": {
+        "kind": "enum",
+        "variants": [{ "name": "Pending" }, { "name": "Finalized" }]
+      }
+    },
+    {
+      "name": "Outcome",
+      "type": {
+        "kind": "enum",
+        "variants": [{ "name": "Undecided" }, { "name": "Yes" }, { "name": "No" }]
+      }
+    }
+  ],
+  "errors": [
+    { "code": 6000, "name": "InvalidFee", "msg": "Provided fee configuration is invalid" },
+    { "code": 6001, "name": "BumpMissing", "msg": "Bump missing for PDA" },
+    { "code": 6002, "name": "MarketBonded", "msg": "Market already bonded" },
+    { "code": 6003, "name": "MarketNotBonded", "msg": "Market is not bonded" },
+    { "code": 6004, "name": "BondThresholdNotMet", "msg": "Bond thresholds not met" },
+    { "code": 6005, "name": "MetadataTooLong", "msg": "Metadata length exceeds limit" },
+    { "code": 6006, "name": "MathOverflow", "msg": "Math overflow" },
+    { "code": 6007, "name": "InvalidSupply", "msg": "Invalid supply value" },
+    { "code": 6008, "name": "InvalidPrice", "msg": "Invalid price value" },
+    { "code": 6009, "name": "InvalidSlope", "msg": "Invalid slope value" },
+    { "code": 6010, "name": "SupplyCapExceeded", "msg": "Supply cap exceeded" },
+    { "code": 6011, "name": "SlippageExceeded", "msg": "Slippage exceeded limits" },
+    { "code": 6012, "name": "InvalidAmount", "msg": "Invalid trade amount" },
+    { "code": 6013, "name": "InsufficientLiquidity", "msg": "Insufficient liquidity in curve" },
+    { "code": 6014, "name": "ResolutionFinal", "msg": "Resolution already finalized" },
+    { "code": 6015, "name": "ResolutionPending", "msg": "Resolution still pending" },
+    { "code": 6016, "name": "InvalidOutcome", "msg": "Invalid outcome" },
+    { "code": 6017, "name": "NothingToHarvest", "msg": "Nothing to harvest" }
+  ],
+  "metadata": {
+    "address": "HypePred111111111111111111111111111111111111"
+  }
+}
+

@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  min-height: 100vh;
+  background: radial-gradient(circle at top right, rgba(99, 59, 245, 0.3), transparent 45%),
+    radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.35), transparent 50%),
+    #04000f;
+  background-attachment: fixed;
+}
+
+.aurora-noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' fill='none'%3E%3Cg opacity='0.06'%3E%3Cpath d='M0 0h10v2H0zm20 0h10v2H20zm20 0h10v2H40zm20 0h10v2H60zm20 0h10v2H80zM10 10h10v2H10zm20 0h10v2H30zm20 0h10v2H50zm20 0h10v2H70zM0 20h10v2H0zm20 0h10v2H20zm20 0h10v2H40zm20 0h10v2H60zm20 0h10v2H80zM10 30h10v2H10zm20 0h10v2H30zm20 0h10v2H50zm20 0h10v2H70z' fill='%23ffffff'/%3E%3C/g%3E%3C/svg%3E");
+  mix-blend-mode: screen;
+  opacity: 0.7;
+}
+
+.glass-panel {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl;
+}
+
+.panel-gradient {
+  background: linear-gradient(135deg, rgba(99, 59, 245, 0.35), rgba(20, 184, 166, 0.35));
+}
+
+.shimmer-border {
+  position: relative;
+}
+
+.shimmer-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(120deg, rgba(99, 59, 245, 0.6), rgba(56, 189, 248, 0.7), rgba(244, 114, 182, 0.65));
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: xor;
+  animation: shimmerMove 6s linear infinite;
+}
+
+@keyframes shimmerMove {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.6), transparent 75%);
+}
+
+.glow {
+  filter: drop-shadow(0 0 18px rgba(99, 59, 245, 0.7));
+}
+
+.glass-button {
+  @apply relative overflow-hidden rounded-full px-6 py-2 text-sm font-medium uppercase tracking-widest backdrop-blur-lg border border-white/20 bg-white/10 transition;
+}
+
+.glass-button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  transition: 0.6s;
+}
+
+.glass-button:hover::after {
+  left: 100%;
+}
+
+.glass-button:hover {
+  @apply border-neon/60 text-neon;
+}
+
+.scroll-gradient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(4, 0, 15, 0.5) 0%, transparent 25%, transparent 75%, rgba(4, 0, 15, 0.75) 100%);
+  pointer-events: none;
+}
+
