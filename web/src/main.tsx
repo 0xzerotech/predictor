@@ -6,19 +6,21 @@ import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adapter-wallets";
 
 import App from "./App";
+import { WalletDebug } from "./components/WalletDebug";
 import "modern-normalize/modern-normalize.css";
 import "@solana/wallet-adapter-react-ui/styles.css";
 import "./index.css";
 
-const endpoint = process.env.ANCHOR_PROVIDER_URL || "http://127.0.0.1:8899";
+const endpoint = (import.meta as any).env?.VITE_RPC_URL || "https://api.devnet.solana.com";
 
-const wallets = [new PhantomWalletAdapter(), new SolflareWalletAdapter({ network: "mainnet-beta" })];
+const wallets = [new PhantomWalletAdapter(), new SolflareWalletAdapter({ network: "devnet" })];
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ConnectionProvider endpoint={endpoint} config={{ commitment: "confirmed" }}>
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>
+          <WalletDebug />
           <BrowserRouter>
             <App />
           </BrowserRouter>

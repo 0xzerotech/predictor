@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Burn, Mint, MintTo, Token, TokenAccount, Transfer};
+use anchor_lang::solana_program::{self, system_program};
 
 declare_id!("HypePred111111111111111111111111111111111111");
 
@@ -1061,5 +1062,232 @@ impl<'info> HarvestAttention<'info> {
             },
         )
     }
+}
+
+// ==========================
+// Simple binary market (SOL vaults, internal accounting)
+// Step 1 skeleton: create_market_simple, buy_side_simple, resolve_market_simple
+// ==========================
+
+#[program]
+pub mod simple_prediction {
+    use super::*;
+
+    pub fn create_market_simple(
+        ctx: Context<CreateMarketSimple>,
+        resolver: Pubkey,
+    ) -> Result<()> {
+        let market = &mut ctx.accounts.market;
+        market.creator = ctx.accounts.creator.key();
+        market.resolver = resolver;
+        market.status = SimpleMarketStatus::Unbonded;
+        market.yes_pool = 500_000_000; // 0.5 SOL
+        market.no_pool = 500_000_000; // 0.5 SOL
+        market.created_at = Clock::get()?.unix_timestamp;
+        market.yes_vault_bump = *ctx.bumps.get("yes_vault").ok_or(ErrorCodeSimple::BumpMissing)?;
+        market.no_vault_bump = *ctx.bumps.get("no_vault").ok_or(ErrorCodeSimple::BumpMissing)?;
+
+        // Fund vaults from creator
+        sol_transfer(
+            &ctx.accounts.creator.to_account_info(),
+            &ctx.accounts.yes_vault.to_account_info(),
+            &ctx.accounts.system_program.to_account_info(),
+            market.yes_pool,
+        )?;
+        sol_transfer(
+            &ctx.accounts.creator.to_account_info(),
+            &ctx.accounts.no_vault.to_account_info(),
+            &ctx.accounts.system_program.to_account_info(),
+            market.no_pool,
+        )?;
+
+        Ok(())
+    }
+
+    pub fn buy_side_simple(
+        ctx: Context<BuySideSimple>,
+        side: BinarySide,
+        amount: u64,
+    ) -> Result<()> {
+        require!(amount > 0, ErrorCodeSimple::InvalidAmount);
+        let market = &mut ctx.accounts.market;
+        let position = &mut ctx.accounts.user_position;
+        if position.user == Pubkey::default() {
+            position.user = ctx.accounts.buyer.key();
+            position.market = market.key();
+        }
+        let fee = amount / 50; // 2%
+        let net = amount.checked_sub(fee).ok_or(ErrorCodeSimple::MathOverflow)?;
+
+        match side {
+            BinarySide::Yes => {
+                let shares = compute_shares_simple(market.no_pool, market.yes_pool, net);
+                market.yes_pool = market.yes_pool.checked_add(net).ok_or(ErrorCodeSimple::MathOverflow)?;
+                position.yes_shares = position.yes_shares.checked_add(shares).ok_or(ErrorCodeSimple::MathOverflow)?;
+                sol_transfer(
+                    &ctx.accounts.buyer.to_account_info(),
+                    &ctx.accounts.yes_vault.to_account_info(),
+                    &ctx.accounts.system_program.to_account_info(),
+                    net,
+                )?;
+            }
+            BinarySide::No => {
+                let shares = compute_shares_simple(market.yes_pool, market.no_pool, net);
+                market.no_pool = market.no_pool.checked_add(net).ok_or(ErrorCodeSimple::MathOverflow)?;
+                position.no_shares = position.no_shares.checked_add(shares).ok_or(ErrorCodeSimple::MathOverflow)?;
+                sol_transfer(
+                    &ctx.accounts.buyer.to_account_info(),
+                    &ctx.accounts.no_vault.to_account_info(),
+                    &ctx.accounts.system_program.to_account_info(),
+                    net,
+                )?;
+            }
+        }
+
+        // protocol fee to treasury
+        sol_transfer(
+            &ctx.accounts.buyer.to_account_info(),
+            &ctx.accounts.protocol_fee.to_account_info(),
+            &ctx.accounts.system_program.to_account_info(),
+            fee,
+        )?;
+
+        Ok(())
+    }
+
+    pub fn resolve_market_simple(
+        ctx: Context<ResolveMarketSimple>,
+        winning: BinarySide,
+    ) -> Result<()> {
+        let market = &mut ctx.accounts.market;
+        require!(market.status != SimpleMarketStatus::Resolved, ErrorCodeSimple::AlreadyResolved);
+        require!(ctx.accounts.resolver.key() == market.resolver, ErrorCodeSimple::Unauthorized);
+        market.winning_side = Some(winning);
+        market.status = SimpleMarketStatus::Resolved;
+        Ok(())
+    }
+}
+
+fn sol_transfer(from: &AccountInfo, to: &AccountInfo, system: &AccountInfo, lamports: u64) -> Result<()> {
+    let ix = solana_program::system_instruction::transfer(from.key, to.key, lamports);
+    let accounts = [from.clone(), to.clone(), system.clone()];
+    solana_program::program::invoke(&ix, &accounts).map_err(Into::into)
+}
+
+#[derive(Accounts)]
+pub struct CreateMarketSimple<'info> {
+    #[account(init, payer = creator, space = 8 + SimpleMarketAccount::LEN)]
+    pub market: Account<'info, SimpleMarketAccount>,
+    #[account(mut)]
+    pub creator: Signer<'info>,
+    #[account(
+        init,
+        payer = creator,
+        space = 0,
+        seeds = [b"yes_vault", market.key().as_ref()],
+        bump
+    )]
+    pub yes_vault: SystemAccount<'info>,
+    #[account(
+        init,
+        payer = creator,
+        space = 0,
+        seeds = [b"no_vault", market.key().as_ref()],
+        bump
+    )]
+    pub no_vault: SystemAccount<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct BuySideSimple<'info> {
+    #[account(mut)]
+    pub market: Account<'info, SimpleMarketAccount>,
+    #[account(
+        init_if_needed,
+        payer = buyer,
+        space = 8 + UserPositionSimple::LEN,
+        seeds = [b"pos", market.key().as_ref(), buyer.key().as_ref()],
+        bump
+    )]
+    pub user_position: Account<'info, UserPositionSimple>,
+    #[account(mut)]
+    pub buyer: Signer<'info>,
+    #[account(mut, seeds = [b"yes_vault", market.key().as_ref()], bump = market.yes_vault_bump)]
+    pub yes_vault: SystemAccount<'info>,
+    #[account(mut, seeds = [b"no_vault", market.key().as_ref()], bump = market.no_vault_bump)]
+    pub no_vault: SystemAccount<'info>,
+    /// CHECK: protocol treasury
+    #[account(mut)]
+    pub protocol_fee: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct ResolveMarketSimple<'info> {
+    #[account(mut)]
+    pub market: Account<'info, SimpleMarketAccount>,
+    pub resolver: Signer<'info>,
+}
+
+#[account]
+pub struct SimpleMarketAccount {
+    pub creator: Pubkey,
+    pub resolver: Pubkey,
+    pub yes_pool: u64,
+    pub no_pool: u64,
+    pub status: SimpleMarketStatus,
+    pub winning_side: Option<BinarySide>,
+    pub created_at: i64,
+    pub yes_vault_bump: u8,
+    pub no_vault_bump: u8,
+}
+
+impl SimpleMarketAccount {
+    pub const LEN: usize = 32 + 32 + 8 + 8 + 1 + 2 + 8 + 1 + 1;
+}
+
+#[account]
+pub struct UserPositionSimple {
+    pub user: Pubkey,
+    pub market: Pubkey,
+    pub yes_shares: u64,
+    pub no_shares: u64,
+    pub has_claimed: bool,
+}
+
+impl UserPositionSimple {
+    pub const LEN: usize = 32 + 32 + 8 + 8 + 1;
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
+pub enum BinarySide {
+    Yes,
+    No,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
+pub enum SimpleMarketStatus {
+    Unbonded,
+    Bonded,
+    Resolved,
+}
+
+fn compute_shares_simple(opposite_pool: u64, current_pool: u64, amount: u64) -> u64 {
+    let k = (opposite_pool as u128).saturating_mul(current_pool as u128);
+    let new_pool = (current_pool as u128).saturating_add(amount as u128);
+    if new_pool == 0 { return 0; }
+    let new_opposite = k / new_pool;
+    let delta = (opposite_pool as u128).saturating_sub(new_opposite);
+    delta as u64
+}
+
+#[error_code]
+pub enum ErrorCodeSimple {
+    #[msg("Invalid amount")] InvalidAmount,
+    #[msg("Math overflow")] MathOverflow,
+    #[msg("Market already resolved")] AlreadyResolved,
+    #[msg("Only resolver authorized")] Unauthorized,
+    #[msg("Bump missing for PDA")] BumpMissing,
 }
 

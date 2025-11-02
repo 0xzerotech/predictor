@@ -1,7 +1,9 @@
 [workspace]
 members = [
-  "programs/hyper_prediction"
+  "programs/hyper_prediction",
+  "programs/prediction_market"
 ]
+resolver = "2"
 
 [profile.release]
 overflow-checks = true

@@ -9,10 +9,10 @@ const config: Config = {
         body: ["'Inter'", "sans-serif"],
       },
       colors: {
-        void: "#04000f",
-        plasma: "#633bf5",
-        neon: "#38bdf8",
-        aurora: "#f472b6",
+        void: "#16232e",
+        plasma: "#3b4b66",
+        neon: "#7aa2f7",
+        aurora: "#9aa7bd",
       },
       backgroundImage: {
         "grid-radial": "radial-gradient(circle at 1px 1px, rgba(99,59,245,0.4) 0.5px, transparent 0)",

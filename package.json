@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "test": "anchor test",
-    "lint": "echo 'No lint configured'"
+    "lint": "echo 'No lint configured'",
+    "devnet:test:pred": "ts-node -T scripts/devnet_pred_market.ts"
   },
   "dependencies": {
     "@coral-xyz/anchor": "0.30.1",

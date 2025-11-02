@@ -1,11 +1,19 @@
 [programs.localnet]
 hyper_prediction = "HypePred111111111111111111111111111111111111"
+prediction_market = "92H1K6RZg4zcxbDaAQ3jq7dV2er1t8NX8rzS9os6aouo"
+
+[programs.devnet]
+hyper_prediction = "HypePred111111111111111111111111111111111111"
+prediction_market = "92H1K6RZg4zcxbDaAQ3jq7dV2er1t8NX8rzS9os6aouo"
+
+[toolchain]
+anchor_version = "0.32.1"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "https://api.devnet.solana.com"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

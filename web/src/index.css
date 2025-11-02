@@ -4,143 +4,82 @@
 
 :root {
   color-scheme: dark;
+  --bg: var(--surface);
+  --surface: #16232e;
+  --line: rgba(255, 255, 255, 0.08);
+  --muted: rgba(255, 255, 255, 0.04);
+  --text: rgba(255, 255, 255, 0.9);
+  --primary: #2ea1ff;     /* blue accent */
+  --success: #22c55e;     /* green */
+  --danger: #ef4444;      /* red */
+  --warning: #f59e0b;     /* amber */
 }
 
 body {
   font-family: "Inter", sans-serif;
   min-height: 100vh;
-  background: radial-gradient(circle at top right, rgba(99, 59, 245, 0.3), transparent 45%),
-    radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.35), transparent 50%),
-    #04000f;
-  background-attachment: fixed;
+  background: var(--bg);
+  color: var(--text);
 }
 
-.aurora-noise {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' fill='none'%3E%3Cg opacity='0.06'%3E%3Cpath d='M0 0h10v2H0zm20 0h10v2H20zm20 0h10v2H40zm20 0h10v2H60zm20 0h10v2H80zM10 10h10v2H10zm20 0h10v2H30zm20 0h10v2H50zm20 0h10v2H70zM0 20h10v2H0zm20 0h10v2H20zm20 0h10v2H40zm20 0h10v2H60zm20 0h10v2H80zM10 30h10v2H10zm20 0h10v2H30zm20 0h10v2H50zm20 0h10v2H70z' fill='%23ffffff'/%3E%3C/g%3E%3C/svg%3E");
-  mix-blend-mode: screen;
-  opacity: 0.7;
+/* Minimal components */
+.card {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 12px;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.3);
 }
-
-.glass-panel {
-  @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl;
+.card:hover { background: color-mix(in oklab, var(--surface) 92%, #ffffff 8%); }
+.chip {
+  border: 1px solid var(--line);
+  background: var(--muted);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
 }
-
-.panel-gradient {
-  background: linear-gradient(135deg, rgba(99, 59, 245, 0.35), rgba(20, 184, 166, 0.35));
+.btn {
+  border: 1px solid var(--line);
+  background: var(--muted);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.85);
 }
-
-.shimmer-border {
-  position: relative;
+.btn:hover { color: #fff; }
+.btn-primary {
+  border-color: color-mix(in oklab, var(--primary) 50%, #fff 0%);
+  background: color-mix(in oklab, var(--primary) 18%, transparent);
+  color: #e7f3ff;
 }
+.btn-primary:hover { background: color-mix(in oklab, var(--primary) 28%, transparent); }
 
-.shimmer-border::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(120deg, rgba(99, 59, 245, 0.6), rgba(56, 189, 248, 0.7), rgba(244, 114, 182, 0.65));
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: xor;
-  animation: shimmerMove 6s linear infinite;
+.chip--primary {
+  border-color: color-mix(in oklab, var(--primary) 40%, #fff 0%);
+  background: color-mix(in oklab, var(--primary) 15%, transparent);
+  color: #e7f3ff;
 }
-
-@keyframes shimmerMove {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+.progress {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
 }
+.progress > span { display: block; height: 100%; background: var(--primary); }
 
-.grid-overlay {
-  position: absolute;
-  inset: 0;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.6), transparent 75%);
+/* Accented chips */
+.chip--yes {
+  border-color: color-mix(in oklab, var(--success) 40%, #fff 0%);
+  background: color-mix(in oklab, var(--success) 15%, transparent);
+  color: #eafff0;
 }
-
-.glow {
-  filter: drop-shadow(0 0 18px rgba(99, 59, 245, 0.7));
+.chip--no {
+  border-color: color-mix(in oklab, var(--danger) 40%, #fff 0%);
+  background: color-mix(in oklab, var(--danger) 15%, transparent);
+  color: #ffecec;
 }
-
-.glass-button {
-  @apply relative overflow-hidden rounded-full px-6 py-2 text-sm font-medium uppercase tracking-widest backdrop-blur-lg border border-white/20 bg-white/10 transition;
-}
-
-.glass-button::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-  transition: 0.6s;
-}
-
-.glass-button:hover::after {
-  left: 100%;
-}
-
-.glass-button:hover {
-  @apply border-neon/60 text-neon;
-}
-
-.scroll-gradient::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(4, 0, 15, 0.5) 0%, transparent 25%, transparent 75%, rgba(4, 0, 15, 0.75) 100%);
-  pointer-events: none;
-}
-
-.hero-veil::before,
-.hero-veil::after {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-.hero-veil::before {
-  background: radial-gradient(circle at 20% 10%, rgba(99, 59, 245, 0.35), transparent 55%),
-    radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.3), transparent 50%),
-    radial-gradient(circle at 50% 120%, rgba(244, 114, 182, 0.25), transparent 65%);
-  opacity: 0.9;
-}
-
-.hero-veil::after {
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.1), transparent 40%), linear-gradient(180deg, rgba(4, 0, 15, 0), rgba(4, 0, 15, 0.65));
-  mix-blend-mode: lighten;
-}
-
-.hero-mesh {
-  width: 100%;
-  height: 100%;
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(45deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
-  background-size: 32px 32px;
-  opacity: 0.6;
-  animation: meshFlow 16s ease-in-out infinite;
-}
-
-@keyframes meshFlow {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(-6%, 4%, 0) scale(1.02);
-  }
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
+.chip--warn {
+  border-color: color-mix(in oklab, var(--warning) 40%, #fff 0%);
+  background: color-mix(in oklab, var(--warning) 15%, transparent);
+  color: #fff8e6;
 }
 

@@ -14,11 +14,11 @@ export const NotFoundPage = () => (
       </p>
     </div>
     <div className="flex flex-wrap items-center justify-center gap-3">
-      <Link to="/" className="glass-button inline-flex items-center gap-2 text-xs text-white/80 hover:text-neon">
+      <Link to="/" className="btn inline-flex items-center gap-2">
         <ArrowLeft className="h-4 w-4" />
         Return home
       </Link>
-      <Link to="/markets" className="glass-button inline-flex items-center gap-2 text-xs text-white/80 hover:text-neon">
+      <Link to="/markets" className="btn inline-flex items-center gap-2">
         Explore markets
       </Link>
     </div>

@@ -155,13 +155,13 @@ export const TradePanel = ({ market, global, onExecuted }: TradePanelProps) => {
   }
 
   return (
-    <div className="glass-panel space-y-6 p-8">
+    <div className="card space-y-6 p-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-display text-2xl text-white">{market.metadata.title}</h3>
-          <p className="text-sm text-white/60">Manage bonding-curve exposure and feed the attention token.</p>
+          <h3 className="text-lg font-semibold text-white/90">{market.metadata.title}</h3>
+          <p className="text-sm text-white/60">Place an order.</p>
         </div>
-        <div className="rounded-full border border-white/10 bg-white/10 px-4 py-1 text-xs uppercase tracking-[0.25rem] text-white/60">
+        <div className="chip">
           {market.state}
         </div>
       </div>
@@ -172,28 +172,28 @@ export const TradePanel = ({ market, global, onExecuted }: TradePanelProps) => {
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => setDirection("buy")}
-              className={`rounded-xl border px-4 py-2 text-sm transition ${
-                direction === "buy" ? "border-neon text-neon" : "border-white/10 text-white/60"
+              className={`rounded-md border px-4 py-2 text-sm transition ${
+                direction === "buy" ? "border-white/40 text-white" : "border-white/10 text-white/60"
               }`}
             >
-              Buy (Join Curve)
+              Buy
             </button>
             <button
               onClick={() => setDirection("sell")}
-              className={`rounded-xl border px-4 py-2 text-sm transition ${
-                direction === "sell" ? "border-aurora text-aurora" : "border-white/10 text-white/60"
+              className={`rounded-md border px-4 py-2 text-sm transition ${
+                direction === "sell" ? "border-white/40 text-white" : "border-white/10 text-white/60"
               }`}
             >
-              Sell (Exit Curve)
+              Sell
             </button>
           </div>
         </label>
         <label className="flex flex-col gap-2 text-sm text-white/70">
-          Quantity (micro shares)
+          Quantity
           <input
             value={quantity}
             onChange={(event) => setQuantity(event.target.value)}
-            className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-white focus:border-neon/60 focus:outline-none"
+            className="rounded-md border border-white/10 bg-black/20 px-4 py-3 text-white focus:border-white/30 focus:outline-none"
             placeholder="100"
           />
         </label>
@@ -202,16 +202,16 @@ export const TradePanel = ({ market, global, onExecuted }: TradePanelProps) => {
           <input
             value={limit}
             onChange={(event) => setLimit(event.target.value)}
-            className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-white focus:border-neon/60 focus:outline-none"
+            className="rounded-md border border-white/10 bg-black/20 px-4 py-3 text-white focus:border-white/30 focus:outline-none"
             placeholder="1000"
           />
         </label>
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/60">
-          <p className="mb-2 text-white/70">Bonding Curve Stats</p>
-          <div className="grid gap-1 text-xs uppercase tracking-[0.2rem]">
-            <span>{`Base price - $${(market.basePrice / 1_000_000).toFixed(2)}`}</span>
-            <span>{`Slope - ${(market.slopeBps / 100).toFixed(2)}%`}</span>
-            <span>{`Curvature - ${(market.curvatureBps / 100).toFixed(2)}%`}</span>
+        <div className="rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-white/60">
+          <p className="mb-2 text-white/70">Stats</p>
+          <div className="grid gap-1 text-xs">
+            <span>{`Price $${(market.basePrice / 1_000_000).toFixed(2)}`}</span>
+            <span>{`Slope ${ (market.slopeBps / 100).toFixed(2) }%`}</span>
+            <span>{`Curvature ${ (market.curvatureBps / 100).toFixed(2) }%`}</span>
           </div>
         </div>
       </div>
@@ -220,14 +220,14 @@ export const TradePanel = ({ market, global, onExecuted }: TradePanelProps) => {
         whileTap={{ scale: 0.98 }}
         disabled={loading}
         onClick={submit}
-        className="glass-button w-full bg-gradient-to-r from-neon/60 via-plasma/70 to-aurora/70 py-3 text-base font-semibold text-white"
+        className="btn w-full py-3 text-base font-semibold"
       >
         {loading ? (
           <span className="flex items-center justify-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" /> Broadcasting
           </span>
         ) : (
-          <>Execute {direction === "buy" ? "Bond Buy" : "Exit Sell"}</>
+          <>Execute {direction === "buy" ? "Buy" : "Sell"}</>
         )}
       </motion.button>
 

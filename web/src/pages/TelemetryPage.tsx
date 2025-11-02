@@ -64,13 +64,13 @@ export const TelemetryPage = () => {
   return (
     <div className="space-y-12">
       <section className="space-y-6">
-        <p className="text-xs uppercase tracking-[0.35rem] text-neon/70">Protocol telemetry</p>
+        <p className="text-xs text-white/50">Protocol telemetry</p>
         <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="glass-panel space-y-5 p-8"
+            className="card space-y-5 p-6"
           >
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="space-y-3">
@@ -80,10 +80,7 @@ export const TelemetryPage = () => {
                   trade reroutes the global hype lattice.
                 </p>
               </div>
-              <Link
-                to={aggregate.topMarket ? `/markets/${aggregate.topMarket.address}` : "/markets"}
-                className="glass-button inline-flex items-center gap-2 text-xs text-white/80 hover:text-neon"
-              >
+              <Link to={aggregate.topMarket ? `/markets/${aggregate.topMarket.address}` : "/markets"} className="btn inline-flex items-center gap-2">
                 Jump to hottest market
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -109,16 +106,16 @@ export const TelemetryPage = () => {
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="glass-panel h-full space-y-4 p-6"
+            className="card h-full space-y-4 p-6"
           >
             <div className="flex items-center gap-3 text-xs uppercase tracking-[0.3rem] text-white/50">
-              <SignalHigh className="h-4 w-4 text-neon" /> Live signal feed
+              <SignalHigh className="h-4 w-4 text-white/60" /> Live signal feed
             </div>
             <p className="text-sm text-white/60">
               Real-time hype capture totals {aggregate.attentionFlow.toLocaleString()} with {aggregate.totalTrades.toLocaleString()} trades
               executed across all curves.
             </p>
-            <div className="rounded-2xl border border-white/10 bg-black/30 p-4 text-sm text-white/60">
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-white/60">
               <p className="uppercase tracking-[0.3rem] text-white/40">Top discovery pulses</p>
               <ul className="mt-3 space-y-3">
                 {stats.hottestDiscovery.map((market) => (
@@ -128,7 +125,7 @@ export const TelemetryPage = () => {
                   </li>
                 ))}
                 {!stats.hottestDiscovery.length && (
-                  <li className="text-xs text-white/40">No discovery markets live yet. Deploy one to spark attention.</li>
+                  <li className="text-xs text-white/40">No discovery markets live yet.</li>
                 )}
               </ul>
             </div>
@@ -139,7 +136,7 @@ export const TelemetryPage = () => {
       <section className="space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.35rem] text-neon/70">Attention atlas</p>
+            <p className="text-xs text-white/50">Attention atlas</p>
             <h2 className="font-display text-3xl text-white sm:text-4xl">Observe hype propagation</h2>
           </div>
           <p className="max-w-xl text-xs text-white/50 sm:text-sm">
@@ -151,12 +148,10 @@ export const TelemetryPage = () => {
         <AttentionStream markets={markets} />
       </section>
 
-      <section className="glass-panel space-y-6 p-6">
+      <section className="card space-y-6 p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3 text-xs uppercase tracking-[0.3rem] text-white/40">
-            <BarChart3 className="h-4 w-4" /> Trade velocity ranking
-          </div>
-          <Link to="/markets" className="glass-button inline-flex items-center gap-2 text-xs text-white/80 hover:text-neon">
+          <div className="flex items-center gap-3 text-xs text-white/50"><BarChart3 className="h-4 w-4" /> Trade velocity</div>
+          <Link to="/markets" className="btn inline-flex items-center gap-2">
             Go to explorer
             <ArrowRight className="h-4 w-4" />
           </Link>
@@ -164,7 +159,7 @@ export const TelemetryPage = () => {
 
         <div className="overflow-hidden rounded-2xl border border-white/10">
           <table className="min-w-full divide-y divide-white/10 text-left text-sm text-white/70">
-            <thead className="bg-white/5 text-xs uppercase tracking-[0.3rem] text-white/40">
+            <thead className="text-xs text-white/50">
               <tr>
                 <th className="px-4 py-3">Market</th>
                 <th className="px-4 py-3">Trades</th>

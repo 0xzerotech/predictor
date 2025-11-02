@@ -12,13 +12,15 @@ export const useProgramClient = () => {
   const wallet = useAnchorWallet();
 
   return useMemo(() => {
-    if (!wallet) {
+    try {
+      if (!wallet || !PROGRAM_ID) {
+        return null;
+      }
+      const provider = new AnchorProvider(connection, wallet, { commitment: "confirmed" });
+      return new Program<HyperPredictionIdl>(hyperIdl as HyperPredictionIdl, PROGRAM_ID, provider);
+    } catch (e) {
       return null;
     }
-    const provider = new AnchorProvider(connection, wallet, {
-      commitment: "confirmed",
-    });
-    return new Program<HyperPredictionIdl>(hyperIdl as HyperPredictionIdl, PROGRAM_ID, provider);
   }, [connection, wallet]);
 };
 
