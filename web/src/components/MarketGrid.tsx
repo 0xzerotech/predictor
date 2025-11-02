@@ -3,11 +3,12 @@ import { MarketCard } from "./MarketCard";
 
 interface MarketGridProps {
   markets: UiMarket[];
-  onSelect: (market: UiMarket) => void;
+  onSelect?: (market: UiMarket) => void;
   activeMarket?: UiMarket | null;
+  disableNavigation?: boolean;
 }
 
-export const MarketGrid = ({ markets, onSelect, activeMarket }: MarketGridProps) => {
+export const MarketGrid = ({ markets, onSelect, activeMarket, disableNavigation }: MarketGridProps) => {
   if (!markets.length) {
     return (
       <div className="glass-panel relative flex h-64 items-center justify-center">
@@ -20,10 +21,11 @@ export const MarketGrid = ({ markets, onSelect, activeMarket }: MarketGridProps)
     <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
       {markets.map((market) => (
         <MarketCard
-          key={market.publicKey.toBase58()}
+          key={market.address}
           market={market}
           onSelect={onSelect}
-          isActive={activeMarket?.publicKey.equals(market.publicKey)}
+          isActive={activeMarket?.address === market.address}
+          disableNavigation={disableNavigation}
         />
       ))}
     </div>

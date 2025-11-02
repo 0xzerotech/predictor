@@ -132,7 +132,7 @@ export const TradePanel = ({ market, global, onExecuted }: TradePanelProps) => {
         })
         .rpc();
 
-      setFeedback(`Trade executed ? ${txSig}`);
+      setFeedback(`Trade executed - ${txSig}`);
       setQuantity("100");
       if (onExecuted) {
         await onExecuted();
@@ -209,9 +209,9 @@ export const TradePanel = ({ market, global, onExecuted }: TradePanelProps) => {
         <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/60">
           <p className="mb-2 text-white/70">Bonding Curve Stats</p>
           <div className="grid gap-1 text-xs uppercase tracking-[0.2rem]">
-            <span>Base Price ? {market.basePrice / 1_000_000} ?</span>
-            <span>Slope ? {(market.slopeBps / 100).toFixed(2)} %</span>
-            <span>Curvature ? {(market.curvatureBps / 100).toFixed(2)} %</span>
+            <span>{`Base price - $${(market.basePrice / 1_000_000).toFixed(2)}`}</span>
+            <span>{`Slope - ${(market.slopeBps / 100).toFixed(2)}%`}</span>
+            <span>{`Curvature - ${(market.curvatureBps / 100).toFixed(2)}%`}</span>
           </div>
         </div>
       </div>

@@ -37,7 +37,7 @@ export const AttentionStream = ({ markets }: AttentionStreamProps) => {
         <div className="grid flex-1 gap-4 sm:grid-cols-2">
           {pulses.map((pulse) => (
             <motion.div
-              key={pulse.market.publicKey.toBase58()}
+              key={pulse.market.address}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: pulse.delay / 1000, duration: 0.6 }}

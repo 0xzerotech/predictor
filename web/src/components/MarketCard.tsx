@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Flame, TrendingUp, Zap } from "lucide-react";
 import { UiMarket } from "../types";
@@ -6,17 +8,26 @@ interface MarketCardProps {
   market: UiMarket;
   onSelect?: (market: UiMarket) => void;
   isActive?: boolean;
+  disableNavigation?: boolean;
 }
 
-export const MarketCard = ({ market, onSelect, isActive }: MarketCardProps) => {
+export const MarketCard = ({ market, onSelect, isActive, disableNavigation }: MarketCardProps) => {
   const pctToBond = Math.min(100, (market.volume / Math.max(1, market.bondVolumeTarget)) * 100);
   const hypeBadge = market.hypeScore > 0 ? Math.log10(market.hypeScore + 1).toFixed(2) : "0.00";
+  const navigate = useNavigate();
+
+  const handleClick = useCallback(() => {
+    onSelect?.(market);
+    if (!disableNavigation) {
+      navigate(`/markets/${market.address}`);
+    }
+  }, [disableNavigation, market, navigate, onSelect]);
 
   return (
     <motion.button
       whileHover={{ y: -6, scale: 1.01 }}
       whileTap={{ scale: 0.995 }}
-      onClick={() => onSelect?.(market)}
+      onClick={handleClick}
       className={`group relative flex h-full w-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 text-left transition backdrop-blur-xl ${
         isActive ? "ring-2 ring-neon/70" : ""
       }`}
@@ -83,7 +94,7 @@ export const MarketCard = ({ market, onSelect, isActive }: MarketCardProps) => {
           <div className="flex items-center gap-2 text-white/60">
             <span>Curve</span>
             <span className="rounded-full border border-white/20 px-2 py-0.5 text-xs">
-              {market.basePrice / 1_000_000} ? base ? {market.slopeBps / 100}% slope
+              {`${(market.basePrice / 1_000_000).toFixed(2)} base - ${(market.slopeBps / 100).toFixed(2)}% slope`}
             </span>
           </div>
         </div>
