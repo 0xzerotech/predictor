@@ -20,11 +20,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Generate Cargo.lock (v3) with Rust 1.77.2
-        run: |
-          rustup toolchain install 1.77.2
-          rm -f Cargo.lock
-          cargo +1.77.2 generate-lockfile
+      # Use the SBF toolchain's cargo to resolve deps; avoid host lockfile
+      - name: Remove host lockfile
+        run: rm -f Cargo.lock
 
       - name: Install Rust 1.82 for anchor-cli build
         run: |
