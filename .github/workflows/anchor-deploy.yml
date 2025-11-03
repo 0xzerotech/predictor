@@ -1,0 +1,56 @@
+name: Build and Deploy (Devnet)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'programs/**'
+      - 'Anchor.toml'
+      - 'Cargo.toml'
+      - '.github/workflows/anchor-deploy.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      OPENSSL_NO_VENDOR: 1
+      ANCHOR_WALLET: /home/runner/.config/solana/id.json
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust 1.82 for anchor-cli build
+        run: |
+          rustup toolchain install 1.82.0
+          RUSTUP_TOOLCHAIN=1.82.0 cargo install anchor-cli --version 0.32.1 --locked
+
+      - name: Install Solana 2.0.3
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/v2.0.3/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+      - name: Configure wallet and program keypair
+        run: |
+          mkdir -p ~/.config/solana
+          printf '%s' "${{ secrets.SOLANA_WALLET }}" > ~/.config/solana/id.json
+          chmod 600 ~/.config/solana/id.json
+          mkdir -p target/deploy
+          printf '%s' "${{ secrets.PROGRAM_KEYPAIR }}" > target/deploy/hyper_prediction-keypair.json
+          chmod 600 target/deploy/hyper_prediction-keypair.json
+
+      - name: Versions
+        run: |
+          anchor --version
+          solana --version
+
+      - name: Build SBF
+        run: anchor build --arch sbf
+
+      - name: Deploy to devnet
+        run: anchor deploy --provider.cluster devnet
+
+      - name: Print program address
+        run: solana address -k target/deploy/hyper_prediction-keypair.json
+
+
