@@ -13,9 +13,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    container: ghcr.io/anza-xyz/solana:v2.0.3
     env:
-      ANCHOR_WALLET: /root/.config/solana/id.json
+      ANCHOR_WALLET: /home/runner/.config/solana/id.json
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,11 +23,11 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          apt-get update
-          apt-get install -y curl ca-certificates build-essential pkg-config libssl-dev libudev-dev libusb-1.0-0-dev cmake git
+          sudo apt-get update
+          sudo apt-get install -y curl ca-certificates build-essential pkg-config libssl-dev libudev-dev libusb-1.0-0-dev cmake git
           if ! command -v cargo >/dev/null 2>&1; then
             curl -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.82.0
-            echo "/root/.cargo/bin" >> $GITHUB_PATH
+            echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           fi
 
       - name: Install Anchor CLI 0.32.1
@@ -37,15 +36,23 @@ jobs:
           set -euxo pipefail
           RUSTUP_TOOLCHAIN=1.82.0 cargo install anchor-cli --version 0.32.1 --locked
           anchor --version
+
+      - name: Install Solana via SVM (anza)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          SVM_VERSION=v2.0.3
+          curl -sSfL https://release.svm.anza.xyz/${SVM_VERSION}/install | sh -s -
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
           solana --version
 
       - name: Prepare wallet and program keypair
         shell: bash
         run: |
           set -euxo pipefail
-          mkdir -p /root/.config/solana
-          printf '%s' "${{ secrets.SOLANA_WALLET }}" > /root/.config/solana/id.json
-          chmod 600 /root/.config/solana/id.json
+          mkdir -p ~/.config/solana
+          printf '%s' "${{ secrets.SOLANA_WALLET }}" > ~/.config/solana/id.json
+          chmod 600 ~/.config/solana/id.json
           mkdir -p target/deploy
           printf '%s' "${{ secrets.PROGRAM_KEYPAIR }}" > target/deploy/hyper_prediction-keypair.json
           chmod 600 target/deploy/hyper_prediction-keypair.json
