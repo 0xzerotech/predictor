@@ -67,6 +67,10 @@ jobs:
           set -euxo pipefail
           # Remove any leftover lockfiles outside the intended program
           find programs -type f -name Cargo.lock ! -path "programs/hyper_prediction/*" -print -delete || true
+          # If an old program directory exists, remove it entirely to avoid cargo scanning it
+          if [ -d programs/prediction_market ]; then
+            rm -rf programs/prediction_market
+          fi
 
       - name: Clean and build SBF (no host Cargo.lock)
         shell: bash
@@ -74,12 +78,12 @@ jobs:
           set -euxo pipefail
           rm -f Cargo.lock
           export PATH="$HOME/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
-          anchor clean || true
-          anchor build --arch sbf
+          anchor clean -p hyper_prediction || true
+          anchor build -p hyper_prediction --arch sbf
 
       - name: Deploy to devnet
         shell: bash
-        run: anchor deploy --provider.cluster devnet
+        run: anchor deploy -p hyper_prediction --provider.cluster devnet
 
       - name: Print program address
         shell: bash
