@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ANCHOR_WALLET: /home/runner/.config/solana/id.json
+      CARGO_NET_GIT_FETCH_WITH_CLI: "true"
     steps:
       - name: Checkout
         uses: actions/checkout@v4

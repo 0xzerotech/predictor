@@ -16,5 +16,4 @@ overflow-checks = true
 
 
 
-[patch.crates-io]
-solana-program = { git = "https://github.com/anza-xyz/solana", tag = "v2.2.1", package = "solana-program" }
+
