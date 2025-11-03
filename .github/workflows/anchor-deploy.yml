@@ -37,6 +37,10 @@ jobs:
         run: |
           set -euxo pipefail
           RUSTUP_TOOLCHAIN=1.82.0 cargo install anchor-cli --version 0.32.1 --locked
+          # Make anchor available in subsequent steps
+          echo "$CARGO_HOME/bin" >> $GITHUB_PATH
+          # Also use it in this step
+          export PATH="$CARGO_HOME/bin:$PATH"
           anchor --version
 
       - name: Install Solana 1.18.17 from solana-labs GitHub release
