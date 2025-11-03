@@ -21,6 +21,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up latest stable Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
       - name: Install deps (build-essential, rustup, cargo)
         shell: bash
         run: |
@@ -32,14 +39,6 @@ jobs:
             echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           fi
 
-      - name: Update Rust to stable (supports lockfile v4)
-        shell: bash
-        run: |
-          set -euxo pipefail
-          rustup update stable
-          rustup default stable
-          rustc --version
-          cargo --version
 
       - name: Install Anchor CLI 0.32.1
         shell: bash
