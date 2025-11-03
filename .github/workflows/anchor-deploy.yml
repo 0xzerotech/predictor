@@ -16,6 +16,7 @@ jobs:
     env:
       ANCHOR_WALLET: /home/runner/.config/solana/id.json
       CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+      CARGO_HOME: ${{ runner.temp }}/cargo
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -68,6 +69,8 @@ jobs:
           set -euxo pipefail
           # Remove any leftover lockfiles outside the intended program
           find programs -type f -name Cargo.lock ! -path "programs/hyper_prediction/*" -print -delete || true
+          # Also ensure the program lockfile is cleared to avoid stale git sources
+          rm -f programs/hyper_prediction/Cargo.lock || true
           # If an old program directory exists, remove it entirely to avoid cargo scanning it
           if [ -d programs/prediction_market ]; then
             rm -rf programs/prediction_market
