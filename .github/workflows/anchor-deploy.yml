@@ -13,6 +13,74 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    container: solanalabs/solana:v2.0.3
+    env:
+      ANCHOR_WALLET: /root/.config/solana/id.json
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install deps (build-essential, rustup, cargo)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          apt-get update
+          apt-get install -y curl ca-certificates build-essential pkg-config libssl-dev libudev-dev libusb-1.0-0-dev cmake git
+          if ! command -v cargo >/dev/null 2>&1; then
+            curl -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.82.0
+            echo "/root/.cargo/bin" >> $GITHUB_PATH
+          fi
+
+      - name: Install Anchor CLI 0.32.1
+        shell: bash
+        run: |
+          set -euxo pipefail
+          RUSTUP_TOOLCHAIN=1.82.0 cargo install anchor-cli --version 0.32.1 --locked
+          anchor --version
+          solana --version
+
+      - name: Prepare wallet and program keypair
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p /root/.config/solana
+          printf '%s' "${{ secrets.SOLANA_WALLET }}" > /root/.config/solana/id.json
+          chmod 600 /root/.config/solana/id.json
+          mkdir -p target/deploy
+          printf '%s' "${{ secrets.PROGRAM_KEYPAIR }}" > target/deploy/hyper_prediction-keypair.json
+          chmod 600 target/deploy/hyper_prediction-keypair.json
+
+      - name: Clean and build SBF (no host Cargo.lock)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -f Cargo.lock
+          anchor clean
+          anchor build --arch sbf
+
+      - name: Deploy to devnet
+        shell: bash
+        run: anchor deploy --provider.cluster devnet
+
+      - name: Print program address
+        shell: bash
+        run: solana address -k target/deploy/hyper_prediction-keypair.json
+
+name: Build and Deploy (Devnet)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'programs/**'
+      - 'Anchor.toml'
+      - 'Cargo.toml'
+      - '.github/workflows/anchor-deploy.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
     env:
       OPENSSL_NO_VENDOR: 1
       ANCHOR_WALLET: /home/runner/.config/solana/id.json
