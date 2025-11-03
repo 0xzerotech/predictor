@@ -21,12 +21,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up latest stable Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
+      - name: Force latest stable Rust 1.82+
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rustup self update
+          rustup toolchain install stable --force
+          rustup default stable
+          rustc --version
 
       - name: Install deps (build-essential, rustup, cargo)
         shell: bash
@@ -94,6 +96,7 @@ jobs:
           find . -type f -name Cargo.lock -delete || true
           export PATH="$HOME/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
           anchor clean || true
+          cargo update
           anchor build --arch sbf
 
       - name: Deploy to devnet
