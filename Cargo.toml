@@ -16,10 +16,10 @@ overflow-checks = true
 
 
 [patch.crates-io]
-solana-program = { version = "1.18.17", package = "solana-program" }
-solana-sdk = { version = "1.18.17", package = "solana-sdk" }
-solana-client = { version = "1.18.17", package = "solana-client" }
-solana-transaction-status = { version = "1.18.17", package = "solana-transaction-status" }
+solana-program = { version = "=1.18.17", package = "solana-program" }
+solana-sdk = { version = "=1.18.17", package = "solana-sdk" }
+solana-client = { version = "=1.18.17", package = "solana-client" }
+solana-transaction-status = { version = "=1.18.17", package = "solana-transaction-status" }
 
 
 
