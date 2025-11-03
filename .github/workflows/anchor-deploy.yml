@@ -37,13 +37,17 @@ jobs:
           RUSTUP_TOOLCHAIN=1.82.0 cargo install anchor-cli --version 0.32.1 --locked
           anchor --version
 
-      - name: Install Solana via SVM (anza)
+      - name: Install Solana 1.18.17 from solana-labs GitHub release
         shell: bash
         run: |
           set -euxo pipefail
-          SVM_VERSION=v2.0.3
-          curl -sSfL https://release.svm.anza.xyz/${SVM_VERSION}/install | sh -s -
-          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+          SOLANA_VERSION=v1.18.17
+          tmp=$(mktemp -d)
+          url="https://github.com/solana-labs/solana/releases/download/${SOLANA_VERSION}/solana-release-x86_64-unknown-linux-gnu.tar.bz2"
+          curl -fsSL "$url" -o "$tmp/solana.tar.bz2"
+          sudo mkdir -p /opt/solana
+          sudo tar -xjf "$tmp/solana.tar.bz2" -C /opt/solana --strip-components=1
+          sudo ln -sf /opt/solana/bin/* /usr/local/bin/
           solana --version
 
       - name: Prepare wallet and program keypair
