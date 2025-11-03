@@ -1,21 +1,17 @@
-[programs.localnet]
-hyper_prediction = "HypePred111111111111111111111111111111111111"
-prediction_market = "92H1K6RZg4zcxbDaAQ3jq7dV2er1t8NX8rzS9os6aouo"
-
-[programs.devnet]
-hyper_prediction = "HypePred111111111111111111111111111111111111"
-prediction_market = "92H1K6RZg4zcxbDaAQ3jq7dV2er1t8NX8rzS9os6aouo"
-
 [toolchain]
 anchor_version = "0.32.1"
+solana_version = "2.2.20"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.devnet]
+hyper_prediction = "5Svbs4ygkZBg6CpgmckTK35ZvACegFVW4F6hfbrhgE6v"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "https://api.devnet.solana.com"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
-
-[scripts]
-test = "anchor test"
-
