@@ -61,6 +61,13 @@ jobs:
           printf '%s' "${{ secrets.PROGRAM_KEYPAIR }}" > target/deploy/hyper_prediction-keypair.json
           chmod 600 target/deploy/hyper_prediction-keypair.json
 
+      - name: Remove stray v4 Cargo.lock files
+        shell: bash
+        run: |
+          set -euxo pipefail
+          # Remove any leftover lockfiles outside the intended program
+          find programs -type f -name Cargo.lock ! -path "programs/hyper_prediction/*" -print -delete || true
+
       - name: Clean and build SBF (no host Cargo.lock)
         shell: bash
         run: |
