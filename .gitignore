@@ -1,0 +1,32 @@
+# Rust
+/target/
+**/target/
+
+# Node
+node_modules/
+**/node_modules/
+
+# Solana/Anchor artifacts
+/.anchor/
+**/.anchor/
+**/idl/
+**/types/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+*.log
+
+# Keys (keep deploy key in target/deploy only)
+*.json
+!target/deploy/hyper_prediction-keypair.json
+
+# Build caches
+/.cargo/
+/.rustup/
+
+# Misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
