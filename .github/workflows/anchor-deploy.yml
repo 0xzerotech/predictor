@@ -13,59 +13,23 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    container: ghcr.io/coral-xyz/anchor:latest
     env:
       OPENSSL_NO_VENDOR: 1
-      ANCHOR_WALLET: /home/runner/.config/solana/id.json
+      ANCHOR_WALLET: /root/.config/solana/id.json
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Install system build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            pkg-config \
-            libssl-dev \
-            libudev-dev \
-            libusb-1.0-0-dev \
-            cmake \
-            xz-utils \
-            bzip2
 
       # Use the SBF toolchain's cargo to resolve deps; avoid host lockfile
       - name: Remove host lockfile
         run: rm -f Cargo.lock
 
-      - name: Install Rust 1.82 for anchor-cli build
-        run: |
-          rustup toolchain install 1.82.0
-          RUSTUP_TOOLCHAIN=1.82.0 cargo install anchor-cli --version 0.32.1 --locked
-
-      - name: Install Solana 2.2.20 from GitHub tarball
-        shell: bash
-        run: |
-          set -euxo pipefail
-          SOLANA_VERSION=v2.2.20
-          tmp=$(mktemp -d)
-          ok=0
-          for ext in xz bz2; do
-            url="https://github.com/solana-labs/solana/releases/download/${SOLANA_VERSION}/solana-release-x86_64-unknown-linux-gnu.tar.${ext}"
-            if curl -fsSL "$url" -o "$tmp/solana.tar.${ext}"; then
-              sudo mkdir -p /opt/solana
-              if [ "$ext" = xz ]; then sudo tar -xJf "$tmp/solana.tar.${ext}" -C /opt/solana --strip-components=1; else sudo tar -xjf "$tmp/solana.tar.${ext}" -C /opt/solana --strip-components=1; fi
-              sudo ln -sf /opt/solana/bin/* /usr/local/bin/
-              ok=1; break;
-            fi
-          done
-          if [ "$ok" -eq 0 ]; then echo "Solana tarball install failed" >&2; exit 1; fi
-          solana --version
-
       - name: Configure wallet and program keypair
         run: |
-          mkdir -p ~/.config/solana
-          printf '%s' "${{ secrets.SOLANA_WALLET }}" > ~/.config/solana/id.json
-          chmod 600 ~/.config/solana/id.json
+          mkdir -p /root/.config/solana
+          printf '%s' "${{ secrets.SOLANA_WALLET }}" > /root/.config/solana/id.json
+          chmod 600 /root/.config/solana/id.json
           mkdir -p target/deploy
           printf '%s' "${{ secrets.PROGRAM_KEYPAIR }}" > target/deploy/hyper_prediction-keypair.json
           chmod 600 target/deploy/hyper_prediction-keypair.json
