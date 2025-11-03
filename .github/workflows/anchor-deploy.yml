@@ -79,10 +79,8 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          # Remove any leftover lockfiles outside the intended program
-          find programs -type f -name Cargo.lock ! -path "programs/hyper_prediction/*" -print -delete || true
-          # Also ensure the program lockfile is cleared to avoid stale git sources
-          rm -f programs/hyper_prediction/Cargo.lock || true
+          # Remove any leftover lockfiles anywhere in the workspace
+          find . -type f -name Cargo.lock -print -delete || true
           # If an old program directory exists, remove it entirely to avoid cargo scanning it
           if [ -d programs/prediction_market ]; then
             rm -rf programs/prediction_market
@@ -93,8 +91,8 @@ jobs:
         run: |
           set -euxo pipefail
           rm -f Cargo.lock
+          find . -type f -name Cargo.lock -delete || true
           export PATH="$HOME/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
-          cargo update
           anchor clean || true
           anchor build --arch sbf
 
