@@ -66,7 +66,8 @@ jobs:
         run: |
           set -euxo pipefail
           rm -f Cargo.lock
-          anchor clean
+          export PATH="$HOME/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
+          anchor clean || true
           anchor build --arch sbf
 
       - name: Deploy to devnet
