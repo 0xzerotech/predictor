@@ -86,6 +86,7 @@ jobs:
           set -euxo pipefail
           rm -f Cargo.lock
           export PATH="$HOME/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
+          cargo update
           anchor clean || true
           anchor build --arch sbf
 
