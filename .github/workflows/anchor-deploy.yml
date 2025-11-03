@@ -78,12 +78,12 @@ jobs:
           set -euxo pipefail
           rm -f Cargo.lock
           export PATH="$HOME/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
-          anchor clean -p hyper_prediction || true
-          anchor build -p hyper_prediction --arch sbf
+          anchor clean || true
+          anchor build --arch sbf
 
       - name: Deploy to devnet
         shell: bash
-        run: anchor deploy -p hyper_prediction --provider.cluster devnet
+        run: anchor deploy --provider.cluster devnet
 
       - name: Print program address
         shell: bash
