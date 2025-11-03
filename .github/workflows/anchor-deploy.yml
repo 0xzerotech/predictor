@@ -43,26 +43,17 @@ jobs:
           rustup toolchain install 1.82.0
           RUSTUP_TOOLCHAIN=1.82.0 cargo install anchor-cli --version 0.32.1 --locked
 
-      - name: Install Solana 2.2.20 from GitHub tarball (robust)
+      - name: Install Solana 2.0.3 via release script (retry, insecure fallback)
         shell: bash
         run: |
           set -euxo pipefail
-          SOLANA_VERSION=v2.2.20
-          tmp=$(mktemp -d)
-          ok=0
-          for name in solana-release-x86_64-unknown-linux-gnu solana-x86_64-unknown-linux-gnu; do
-            for ext in xz bz2; do
-              url="https://github.com/solana-labs/solana/releases/download/${SOLANA_VERSION}/${name}.tar.${ext}"
-              if curl -fsSL "$url" -o "$tmp/solana.tar.${ext}"; then
-                sudo mkdir -p /opt/solana
-                if [ "$ext" = xz ]; then sudo tar -xJf "$tmp/solana.tar.${ext}" -C /opt/solana --strip-components=1; else sudo tar -xjf "$tmp/solana.tar.${ext}" -C /opt/solana --strip-components=1; fi
-                sudo ln -sf /opt/solana/bin/* /usr/local/bin/
-                ok=1; break 2;
-              fi
-            done
+          SOLANA_VERSION=v2.0.3
+          for i in {1..10}; do
+            if curl -fsSL https://release.solana.com/${SOLANA_VERSION}/install | sh -s -; then break; fi
+            if curl -kfsSL https://release.solana.com/${SOLANA_VERSION}/install | sh -s -; then break; fi
+            sleep 2
           done
-          if [ "$ok" -eq 0 ]; then echo "Solana tarball install failed" >&2; exit 1; fi
-          echo "/usr/local/bin" >> $GITHUB_PATH
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
           solana --version
 
       - name: Configure wallet and program keypair
