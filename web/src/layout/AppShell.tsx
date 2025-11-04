@@ -1,21 +1,23 @@
 import { useCallback } from "react";
 import { NavLink, Outlet, Link, useLocation } from "react-router-dom";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { motion } from "framer-motion";
 import { RefreshCw, Orbit, Search } from "lucide-react";
 
 import { useMarketsContext } from "../context/MarketsContext";
-
-const navItems = [
-  { label: "Home", to: "/" },
-  { label: "Markets", to: "/markets" },
-  { label: "Board", to: "/board" },
-  { label: "Telemetry", to: "/telemetry" },
-];
+import { useAuth } from "../context/AuthContext";
 
 export const AppShell = () => {
-  const { aggregate, mutate, program } = useMarketsContext();
+  const { mutate } = useMarketsContext();
+  const { user, logout } = useAuth();
   const location = useLocation();
+
+  const navItems = [
+    { label: "Home", to: "/" },
+    { label: "Markets", to: "/markets" },
+    { label: "Board", to: "/board" },
+    { label: "Telemetry", to: "/telemetry" },
+    { label: "Profile", to: "/profile" },
+    ...(user?.role === "ADMIN" ? [{ label: "Admin", to: "/admin" }] : []),
+  ];
 
   const handleRefresh = useCallback(async () => {
     await mutate();
@@ -54,7 +56,6 @@ export const AppShell = () => {
             />
           </div>
 
-          {program ? (
             <button
               onClick={handleRefresh}
               className="hidden items-center gap-2 rounded-md border border-white/15 bg-white/5 px-3 py-2 text-xs text-white/70 hover:text-white sm:flex"
@@ -62,8 +63,28 @@ export const AppShell = () => {
               <RefreshCw className="h-4 w-4" />
               Refresh
             </button>
-          ) : null}
-          <WalletMultiButton className="!btn !btn-primary !px-4 !py-2 !text-xs" />
+            {user ? (
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-white/70">{user.email}</span>
+                <button
+                  onClick={logout}
+                  className="rounded-md border border-white/15 bg-white/5 px-3 py-2 text-xs text-white/70 hover:text-white"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <NavLink
+                to="/login"
+                className={({ isActive }) =>
+                  `rounded-md border border-white/15 bg-white/5 px-3 py-2 text-xs ${
+                    isActive ? "text-white" : "text-white/70 hover:text-white"
+                  }`
+                }
+              >
+                Login
+              </NavLink>
+            )}
         </div>
       </header>
 

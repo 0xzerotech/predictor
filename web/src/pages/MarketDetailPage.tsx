@@ -10,7 +10,7 @@ import { MarketGrid } from "../components/MarketGrid";
 
 export const MarketDetailPage = () => {
   const { marketId } = useParams<{ marketId: string }>();
-  const { markets, global, mutate, aggregate } = useMarketsContext();
+  const { markets, mutate, aggregate } = useMarketsContext();
 
   const market = markets.find((entry) => entry.address === marketId);
 
@@ -123,7 +123,7 @@ export const MarketDetailPage = () => {
         </div>
 
         <div className="space-y-6">
-          <TradePanel market={market} global={global ?? undefined} onExecuted={mutate} />
+            <TradePanel market={market} onExecuted={mutate} />
 
           <div className="card space-y-4 p-6">
             <p className="text-xs uppercase tracking-[0.35rem] text-white/40">Bond threshold</p>

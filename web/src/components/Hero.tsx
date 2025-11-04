@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 
 import { UiMarket } from "../types";
 
@@ -121,26 +120,25 @@ export const Hero = ({
             graduates discovery markets into bonded, self-resolving intelligence surfaces.
           </motion.p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            className="flex flex-wrap items-center gap-4"
-          >
-            <a
-              href="#markets"
-              className="glass-button bg-gradient-to-r from-plasma/70 via-neon/70 to-aurora/70 text-sm font-semibold text-white shadow-lg shadow-neon/10"
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="flex flex-wrap items-center gap-4"
             >
-              Explore Live Markets
-            </a>
-            <a
-              href="#telemetry"
-              className="glass-button border-neon/40 bg-white/5 text-sm text-white/80 hover:text-neon"
-            >
-              View Protocol Telemetry
-            </a>
-            <WalletMultiButton className="glass-button !px-5 !py-2 text-sm" />
-          </motion.div>
+              <a
+                href="#markets"
+                className="glass-button bg-gradient-to-r from-plasma/70 via-neon/70 to-aurora/70 text-sm font-semibold text-white shadow-lg shadow-neon/10"
+              >
+                Explore Live Markets
+              </a>
+              <a
+                href="#telemetry"
+                className="glass-button border-neon/40 bg-white/5 text-sm text-white/80 hover:text-neon"
+              >
+                View Protocol Telemetry
+              </a>
+            </motion.div>
 
           <motion.div
             initial="hidden"
