@@ -100,13 +100,16 @@ jobs:
       - name: Clean and build SBF (use generated v3 Cargo.lock)
         shell: bash
         env:
-          RUSTUP_TOOLCHAIN: stable
+          RUSTUP_TOOLCHAIN: 1.77.2
         run: |
           set -euxo pipefail
           rustc --version
           cargo --version
           ls -la | grep Cargo.lock || true
-          export PATH="$HOME/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
+          # Ensure rustup toolchain binaries take precedence; append SBF tools so cargo can find cargo-build-sbf
+          export PATH="$HOME/.cargo/bin:$PATH:$HOME/.local/share/solana/install/active_release/bin"
+          rustc --version
+          cargo --version
           anchor clean || true
           anchor build --arch sbf
 
