@@ -87,7 +87,17 @@ jobs:
             rm -rf programs/prediction_market
           fi
 
-      - name: Clean and build SBF (no host Cargo.lock)
+      - name: Generate Cargo.lock (v3) with Rust 1.77.2 for SBF
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rustup toolchain install 1.77.2 -y
+          RUSTUP_TOOLCHAIN=1.77.2 cargo --version
+          # Create a v3 lockfile compatible with SBF cargo
+          RUSTUP_TOOLCHAIN=1.77.2 cargo generate-lockfile
+          head -n 5 Cargo.lock || true
+
+      - name: Clean and build SBF (use generated v3 Cargo.lock)
         shell: bash
         env:
           RUSTUP_TOOLCHAIN: stable
@@ -95,9 +105,7 @@ jobs:
           set -euxo pipefail
           rustc --version
           cargo --version
-          rm -f Cargo.lock
-          find . -type f -name Cargo.lock -delete || true
-           ls -la | grep Cargo.lock || true
+          ls -la | grep Cargo.lock || true
           export PATH="$HOME/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
           anchor clean || true
           anchor build --arch sbf
