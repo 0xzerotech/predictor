@@ -89,10 +89,15 @@ jobs:
 
       - name: Clean and build SBF (no host Cargo.lock)
         shell: bash
+        env:
+          RUSTUP_TOOLCHAIN: stable
         run: |
           set -euxo pipefail
+          rustc --version
+          cargo --version
           rm -f Cargo.lock
           find . -type f -name Cargo.lock -delete || true
+           ls -la | grep Cargo.lock || true
           export PATH="$HOME/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
           anchor clean || true
           anchor build --arch sbf
