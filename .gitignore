@@ -17,6 +17,10 @@ node_modules/
 Thumbs.db
 *.log
 
+# Cargo lockfiles (regenerate in CI)
+Cargo.lock
+**/Cargo.lock
+
 # Keys (keep deploy key in target/deploy only)
 *.json
 !target/deploy/hyper_prediction-keypair.json
