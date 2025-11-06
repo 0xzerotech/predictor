@@ -1,86 +1,24 @@
-import { useState, useMemo } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { PublicKey, Transaction } from "@solana/web3.js";
-import {
-  getAssociatedTokenAddress,
-  createAssociatedTokenAccountInstruction,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
-import { motion } from "framer-motion";
-import { ArrowRightLeft, Loader2 } from "lucide-react";
+import { useState } from "react";
 
 import { UiMarket } from "../types";
-import { useProgramClient, BN } from "../solana/useProgramClient";
-import { CURVE_SEED } from "../solana/constants";
+import { placeBet } from "../api/markets";
 
 interface TradePanelProps {
   market: UiMarket | null;
-  global?: { publicKey: PublicKey; account: any } | null;
   onExecuted?: () => Promise<void> | void;
 }
 
-export const TradePanel = ({ market, global, onExecuted }: TradePanelProps) => {
-  const program = useProgramClient();
-  const { publicKey } = useWallet();
-  const [direction, setDirection] = useState<"buy" | "sell">("buy");
-  const [quantity, setQuantity] = useState("100");
-  const [limit, setLimit] = useState("1000");
-  const [feedback, setFeedback] = useState<string | null>(null);
+export const TradePanel = ({ market, onExecuted }: TradePanelProps) => {
+  const [side, setSide] = useState<"YES" | "NO">("YES");
+  const [amount, setAmount] = useState("100");
   const [loading, setLoading] = useState(false);
-
-  const quoteMint = global ? new PublicKey(global.account.quoteMint) : null;
-  const treasury = global ? new PublicKey(global.account.treasury) : null;
-
-  const defaultCreator = useMemo(() => {
-    if (!market) return null;
-    if (market.metadata.creatorQuoteDestination) {
-      try {
-        return new PublicKey(market.metadata.creatorQuoteDestination);
-      } catch (err) {
-        console.warn("invalid creator destination", err);
-      }
-    }
-    return null;
-  }, [market]);
-
-  const defaultTreasury = useMemo(() => {
-    if (!market || !global) return null;
-    if (market.metadata.treasuryQuoteDestination) {
-      try {
-        return new PublicKey(market.metadata.treasuryQuoteDestination);
-      } catch (err) {
-        console.warn("invalid treasury destination", err);
-      }
-    }
-    return null;
-  }, [market, global]);
-
-  const ensureAta = async (mint: PublicKey, owner: PublicKey) => {
-    if (!program) throw new Error("program unavailable");
-    const provider = program.provider;
-    const ata = await getAssociatedTokenAddress(mint, owner);
-    const info = await provider.connection.getAccountInfo(ata);
-    if (!info) {
-      const ix = createAssociatedTokenAccountInstruction(provider.wallet.publicKey, ata, owner, mint);
-      const tx = new Transaction().add(ix);
-      await provider.sendAndConfirm(tx, [], { commitment: "confirmed" });
-    }
-    return ata;
-  };
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   const submit = async () => {
-    if (!program || !market || !global || !publicKey || !quoteMint || !treasury) {
-      setFeedback("Connect your wallet and select a market to trade.");
-      return;
-    }
-    const quantityNum = Number(quantity);
-    const limitNum = Number(limit);
-    if (!Number.isFinite(quantityNum) || quantityNum <= 0) {
-      setFeedback("Quantity must be a positive number.");
-      return;
-    }
-    if (!Number.isFinite(limitNum) || limitNum <= 0) {
-      setFeedback("Provide a positive slippage guard.");
+    if (!market) return;
+    const stake = Number(amount);
+    if (!Number.isFinite(stake) || stake <= 0) {
+      setFeedback("Amount must be positive");
       return;
     }
 
@@ -88,58 +26,13 @@ export const TradePanel = ({ market, global, onExecuted }: TradePanelProps) => {
     setFeedback(null);
 
     try {
-      const userQuoteAta = await ensureAta(quoteMint, publicKey);
-      const userShareAta = await ensureAta(market.marketMint, publicKey);
-
-      const creatorDestination = defaultCreator
-        ? defaultCreator
-        : await getAssociatedTokenAddress(quoteMint, market.authority);
-      const treasuryDestination = defaultTreasury
-        ? defaultTreasury
-        : await getAssociatedTokenAddress(quoteMint, treasury);
-
-      const [curveAddress] = await PublicKey.findProgramAddress(
-        [CURVE_SEED, market.publicKey.toBuffer()],
-        program.programId
-      );
-
-      const quantityBn = new BN(Math.floor(quantityNum * 1_000_000));
-      const limitBn = new BN(Math.floor(limitNum * 1_000_000));
-
-      const tradeArgs = {
-        direction: direction === "buy" ? { buy: {} } : { sell: {} },
-        quantity: quantityBn,
-        maxSpend: direction === "buy" ? limitBn : new BN(0),
-        minReceive: direction === "sell" ? limitBn : new BN(0),
-      };
-
-      const txSig = await program.methods
-        .tradeCurve(tradeArgs)
-        .accounts({
-          globalState: global.publicKey,
-          market: market.publicKey,
-          curve: curveAddress,
-          marketMint: market.marketMint,
-          marketQuoteVault: market.quoteVault,
-          marketAttentionVault: market.attentionVault,
-          userQuote: userQuoteAta,
-          userShares: userShareAta,
-          creatorFeeDestination: creatorDestination,
-          treasuryFeeDestination: treasuryDestination,
-          marketCreator: market.authority,
-          user: publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
-        })
-        .rpc();
-
-      setFeedback(`Trade executed - ${txSig}`);
-      setQuantity("100");
+      await placeBet(market.id, { side, amount: stake });
+      setFeedback("Bet placed successfully");
       if (onExecuted) {
         await onExecuted();
       }
-    } catch (error: any) {
-      console.error(error);
-      setFeedback(error?.message ?? "Trade failed. Check console for details.");
+    } catch (err: any) {
+      setFeedback(err?.message ?? "Bet failed");
     } finally {
       setLoading(false);
     }
@@ -147,93 +40,64 @@ export const TradePanel = ({ market, global, onExecuted }: TradePanelProps) => {
 
   if (!market) {
     return (
-      <div className="glass-panel flex h-full min-h-[380px] flex-col items-center justify-center gap-4 p-10 text-center text-white/60">
-        <ArrowRightLeft className="h-12 w-12 text-white/30" />
-        <p>Select a market on the left to compose a trade curve interaction.</p>
+      <div className="glass-panel flex h-full min-h-[260px] flex-col items-center justify-center gap-4 p-6 text-center text-white/60">
+        <p>Select a market to place a bet.</p>
       </div>
     );
   }
 
   return (
     <div className="card space-y-6 p-6">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-white/90">{market.metadata.title}</h3>
-          <p className="text-sm text-white/60">Place an order.</p>
+          <h3 className="text-lg font-semibold text-white">{market.metadata.title}</h3>
+          <p className="text-xs text-white/60">Enter a stake and choose an outcome.</p>
         </div>
-        <div className="chip">
-          {market.state}
-        </div>
+        <span className="chip">{market.state}</span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-2 text-sm text-white/70">
-          Direction
+          Outcome
           <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={() => setDirection("buy")}
+              onClick={() => setSide("YES")}
               className={`rounded-md border px-4 py-2 text-sm transition ${
-                direction === "buy" ? "border-white/40 text-white" : "border-white/10 text-white/60"
+                side === "YES" ? "border-white/40 text-white" : "border-white/10 text-white/60"
               }`}
             >
-              Buy
+              YES
             </button>
             <button
-              onClick={() => setDirection("sell")}
+              onClick={() => setSide("NO")}
               className={`rounded-md border px-4 py-2 text-sm transition ${
-                direction === "sell" ? "border-white/40 text-white" : "border-white/10 text-white/60"
+                side === "NO" ? "border-white/40 text-white" : "border-white/10 text-white/60"
               }`}
             >
-              Sell
+              NO
             </button>
           </div>
         </label>
         <label className="flex flex-col gap-2 text-sm text-white/70">
-          Quantity
+          Stake
           <input
-            value={quantity}
-            onChange={(event) => setQuantity(event.target.value)}
+            value={amount}
+            onChange={(event) => setAmount(event.target.value)}
             className="rounded-md border border-white/10 bg-black/20 px-4 py-3 text-white focus:border-white/30 focus:outline-none"
             placeholder="100"
           />
         </label>
-        <label className="flex flex-col gap-2 text-sm text-white/70">
-          {direction === "buy" ? "Max spend (quote)" : "Min receive (quote)"}
-          <input
-            value={limit}
-            onChange={(event) => setLimit(event.target.value)}
-            className="rounded-md border border-white/10 bg-black/20 px-4 py-3 text-white focus:border-white/30 focus:outline-none"
-            placeholder="1000"
-          />
-        </label>
-        <div className="rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-white/60">
-          <p className="mb-2 text-white/70">Stats</p>
-          <div className="grid gap-1 text-xs">
-            <span>{`Price $${(market.basePrice / 1_000_000).toFixed(2)}`}</span>
-            <span>{`Slope ${ (market.slopeBps / 100).toFixed(2) }%`}</span>
-            <span>{`Curvature ${ (market.curvatureBps / 100).toFixed(2) }%`}</span>
-          </div>
-        </div>
       </div>
 
-      <motion.button
-        whileTap={{ scale: 0.98 }}
-        disabled={loading}
+      <button
         onClick={submit}
-        className="btn w-full py-3 text-base font-semibold"
+        disabled={loading}
+        className="btn btn-primary flex w-full items-center justify-center gap-2"
       >
-        {loading ? (
-          <span className="flex items-center justify-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" /> Broadcasting
-          </span>
-        ) : (
-          <>Execute {direction === "buy" ? "Buy" : "Sell"}</>
-        )}
-      </motion.button>
+        {loading ? "Submitting..." : `Place ${side} bet`}
+      </button>
 
-      {feedback && (
-        <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white/70">{feedback}</div>
-      )}
+      {feedback ? <p className="text-xs text-white/60">{feedback}</p> : null}
     </div>
   );
 };

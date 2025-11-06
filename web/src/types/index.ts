@@ -1,42 +1,29 @@
-import { PublicKey } from "@solana/web3.js";
-
 export type MarketPhase = "Discovery" | "Bonded";
 
+export interface MarketMetadata {
+  title: string;
+  description?: string;
+  tags?: string[];
+}
+
 export interface UiMarket {
-  publicKey: PublicKey;
+  id: string;
   address: string;
-  marketMint: PublicKey;
-  quoteVault: PublicKey;
-  attentionVault: PublicKey;
-  global: PublicKey;
-  authority: PublicKey;
   state: MarketPhase;
-  supply: number;
+  status: "OPEN" | "CLOSED" | "RESOLVED";
   volume: number;
   trades: number;
   hypeScore: number;
   basePrice: number;
+  bondVolumeTarget: number;
+  bondLiquidityTarget: number;
   slopeBps: number;
   curvatureBps: number;
   maxSupply: number;
-  bondVolumeTarget: number;
-  bondLiquidityTarget: number;
+  supply: number;
   createdTs: number;
   bondedTs: number;
   metadata: MarketMetadata;
-  quoteVaultBump: number;
-  attentionVaultBump: number;
-}
-
-export interface MarketMetadata {
-  title: string;
-  description: string;
-  image?: string;
-  sentiment?: string;
-  creator?: string;
-  creatorQuoteDestination?: string;
-  treasuryQuoteDestination?: string;
-  tags?: string[];
 }
 
 export interface AttentionPulse {

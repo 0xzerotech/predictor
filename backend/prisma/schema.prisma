@@ -1,0 +1,207 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  CREATOR
+  ADMIN
+}
+
+enum BetSide {
+  YES
+  NO
+}
+
+enum BetStatus {
+  PLACED
+  CANCELLED
+  PAID_OUT
+  LOST
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL_REQUEST
+  WITHDRAWAL_APPROVED
+  WITHDRAWAL_REJECTED
+  BET_DEBIT
+  BET_REFUND
+  BET_FORFEIT
+  PAYOUT
+  ADJUSTMENT
+  STRIPE_WEBHOOK
+}
+
+enum TransactionDirection {
+  CREDIT
+  DEBIT
+}
+
+enum MarketOutcome {
+  YES
+  NO
+  VOID
+}
+
+enum MarketStatus {
+  OPEN
+  CLOSED
+  RESOLVED
+}
+
+enum MarketEventType {
+  MARKET_CREATED
+  MARKET_UPDATED
+  MARKET_CLOSED
+  MARKET_RESOLVED
+  BET_PLACED
+  BET_CANCELLED
+  PAYOUT_EXECUTED
+  BALANCE_ADJUSTED
+}
+
+model User {
+  id                String             @id @default(uuid())
+  email             String             @unique
+  username          String?            @unique
+  passwordHash      String
+  role              Role               @default(USER)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  bets              Bet[]
+  markets           Market[]           @relation("MarketCreator")
+  sessions          UserSession[]
+  transactions      Transaction[]
+  ledgerEntries     LedgerEntry[]
+  adminActions      AdminAction[]
+  balances          UserBalance[]
+}
+
+model UserSession {
+  id             String   @id @default(uuid())
+  user           User     @relation(fields: [userId], references: [id])
+  userId         String
+  tokenHash      String
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  revokedAt      DateTime?
+  device         String?
+  ipAddress      String?
+}
+
+model Market {
+  id               String          @id @default(uuid())
+  question         String
+  description      String?
+  closesAt         DateTime?
+  resolutionTime   DateTime?
+  status           MarketStatus    @default(OPEN)
+  outcome          MarketOutcome?
+  resolvedBy       String?
+  resolvedAt       DateTime?
+  liquidity        Decimal         @db.Decimal(20, 8) @default(100)
+  feeBps           Int             @default(200)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  creator          User            @relation("MarketCreator", fields: [createdBy], references: [id])
+  createdBy        String
+  bets             Bet[]
+  events           MarketEvent[]
+  bondingCurves    BondingCurveSnapshot[]
+}
+
+model Bet {
+  id             String      @id @default(uuid())
+  user           User        @relation(fields: [userId], references: [id])
+  userId         String
+  market         Market      @relation(fields: [marketId], references: [id])
+  marketId       String
+  side           BetSide
+  amount         Decimal     @db.Decimal(20, 8)
+  status         BetStatus   @default(PLACED)
+  payoutAmount   Decimal?    @db.Decimal(20, 8)
+  odds           Decimal?    @db.Decimal(20, 8)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model Transaction {
+  id             String                @id @default(uuid())
+  user           User                  @relation(fields: [userId], references: [id])
+  userId         String
+  type           TransactionType
+  direction      TransactionDirection
+  amount         Decimal               @db.Decimal(20, 8)
+  balanceBefore  Decimal               @db.Decimal(20, 8)
+  balanceAfter   Decimal               @db.Decimal(20, 8)
+  reference      String?
+  metadata       Json?
+  createdAt      DateTime              @default(now())
+  betId          String?
+  bet            Bet?                  @relation(fields: [betId], references: [id])
+  ledgerEntries  LedgerEntry[]
+}
+
+model LedgerEntry {
+  id            String                @id @default(uuid())
+  transaction   Transaction           @relation(fields: [transactionId], references: [id])
+  transactionId String
+  user          User                  @relation(fields: [userId], references: [id])
+  userId        String
+  direction     TransactionDirection
+  amount        Decimal               @db.Decimal(20, 8)
+  createdAt     DateTime              @default(now())
+  notes         String?
+}
+
+model MarketEvent {
+  id         String           @id @default(uuid())
+  market     Market           @relation(fields: [marketId], references: [id])
+  marketId   String
+  type       MarketEventType
+  createdAt  DateTime         @default(now())
+  actorId    String?
+  snapshot   Json?
+  metadata   Json?
+}
+
+model AdminAction {
+  id          String    @id @default(uuid())
+  admin       User      @relation(fields: [adminId], references: [id])
+  adminId     String
+  action      String
+  targetId    String?
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+}
+
+model UserBalance {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  available   Decimal  @db.Decimal(20, 8) @default(0)
+  locked      Decimal  @db.Decimal(20, 8) @default(0)
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@unique([userId])
+}
+
+model BondingCurveSnapshot {
+  id              String   @id @default(uuid())
+  market          Market   @relation(fields: [marketId], references: [id])
+  marketId        String
+  totalYesStake   Decimal  @db.Decimal(20, 8)
+  totalNoStake    Decimal  @db.Decimal(20, 8)
+  liquidity       Decimal  @db.Decimal(20, 8)
+  priceYes        Decimal  @db.Decimal(20, 8)
+  priceNo         Decimal  @db.Decimal(20, 8)
+  createdAt       DateTime @default(now())
+  notes           String?
+}
